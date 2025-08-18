@@ -1,0 +1,64 @@
+name: Node.js CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 12 * * *"
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test
+        
+      - name: Capture failure logs
+        if: failure()
+        run: |
+          echo "Job failed at $(date)" > failure.log
+          echo "GitHub Run ID: ${{ github.run_id }}" >> failure.log
+          echo "Commit: ${{ github.sha }}" >> failure.log
+        continue-on-error: true
+
+      - name: Upload failure logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-failure-logs
+          path: failure.log
+
+  deploy:
+    runs-on: self-hosted
+    needs: build
+    environment:
+      name: production
+    steps:
+      - name: Wait for approval
+        run: echo "Waiting for manual approval..."
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy application
+        run: |
+          echo "Deploying application..."
+          docker stop sample-node-app || true
+          docker rm sample-node-app || true
+          docker build . -t sample-node-app
+          docker run -itd --name sample-node-app -p 3000:3000 sample-node-app
+          echo "Deployment complete!"
