@@ -27,21 +27,6 @@ jobs:
 
       - name: Run tests
         run: npm test
-        
-      - name: Capture failure logs
-        if: failure()
-        run: |
-          echo "Job failed at $(date)" > failure.log
-          echo "GitHub Run ID: ${{ github.run_id }}" >> failure.log
-          echo "Commit: ${{ github.sha }}" >> failure.log
-        continue-on-error: true
-
-      - name: Upload failure logs
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-failure-logs
-          path: failure.log
 
   deploy:
     runs-on: self-hosted
@@ -51,15 +36,37 @@ jobs:
     steps:
       - name: Wait for approval
         run: echo "Waiting for manual approval..."
+
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Deploy application
         run: |
           echo "Deploying application..."
-          sudo apt install docker.io -y
+          apt install docker.io -y
           sudo docker stop sample-node-app || true
           sudo docker rm sample-node-app || true
           sudo docker build . -t sample-node-app
           sudo docker run -itd --name sample-node-app -p 3000:3000 sample-node-app
           echo "Deployment complete!"
+
+  failure-logger:
+    runs-on: self-hosted
+    needs: [build, deploy]
+    if: failure()
+    steps:
+      - name: Capture failure logs
+        run: |
+          echo "Pipeline failed!" > failure.log
+          echo "Time: $(date)" >> failure.log
+          echo "GitHub Run ID: ${{ github.run_id }}" >> failure.log
+          echo "Commit: ${{ github.sha }}" >> failure.log
+          echo "Actor: ${{ github.actor }}" >> failure.log
+          echo "Branch: ${{ github.ref }}" >> failure.log
+          echo "Failed Jobs: build/deploy (check logs for details)" >> failure.log
+
+      - name: Upload failure logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-failure-logs
+          path: failure.log
