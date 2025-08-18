@@ -57,7 +57,7 @@ jobs:
       - name: Deploy application
         run: |
           echo "Deploying application..."
-          apt install docker.io -y
+          sudo apt install docker.io -y
           docker stop sample-node-app || true
           docker rm sample-node-app || true
           docker build . -t sample-node-app
