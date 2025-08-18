@@ -1,0 +1,12 @@
+{
+  "name": "sample-node-app",
+  "version": "1.0.0",
+  "description": "A simple Node.js Hello World app for CI/CD demo",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "build": "echo 'Building the app...'", 
+    "test": "echo 'Running tests...'"
+  },
+  "dependencies": {}
+}
