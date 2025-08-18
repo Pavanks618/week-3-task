@@ -58,8 +58,8 @@ jobs:
         run: |
           echo "Deploying application..."
           sudo apt install docker.io -y
-          docker stop sample-node-app || true
-          docker rm sample-node-app || true
-          docker build . -t sample-node-app
-          docker run -itd --name sample-node-app -p 3000:3000 sample-node-app
+          sudo docker stop sample-node-app || true
+          sudo docker rm sample-node-app || true
+          sudo docker build . -t sample-node-app
+          sudo docker run -itd --name sample-node-app -p 3000:3000 sample-node-app
           echo "Deployment complete!"
