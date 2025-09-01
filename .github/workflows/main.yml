@@ -47,7 +47,7 @@ jobs:
           sudo docker stop sample-node-app || true
           sudo docker rm sample-node-app || true
           sudo docker build . -t sample-node-app
-          sudo docker run -itd --name sample-node-app -p 3000:3000 sample-node-app
+          docker run -itd --name sample-node-app -p 3000:3000 sample-node-app
           echo "Deployment complete!"
 
   failure-logger:
